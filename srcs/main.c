@@ -6,7 +6,7 @@
 /*   By: gpetrov <gpetrov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/04/22 18:59:21 by gpetrov           #+#    #+#             */
-/*   Updated: 2014/04/22 19:43:49 by gpetrov          ###   ########.fr       */
+/*   Updated: 2014/04/23 23:18:17 by gpetrov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ void        ft_nm(char *file)
     struct mach_header_64 *mh;
     struct load_command *lc;
     struct segment_command_64 *sc;
-    struct symtab_command      *test;
     struct section_64 *sect;
 
     // Open the file and get its size
@@ -59,31 +58,58 @@ void        ft_nm(char *file)
 
     for (int i = 0; (unsigned int)i < mh->ncmds; i++) {
         lc = (struct load_command *)addr;
-        if (lc->cmdsize == 0) continue;
+		
+		if (lc->cmdsize == 0) continue;
 
         // If the load command is a (64-bit) segment,
         // print information about the segment
-        sc = (struct segment_command_64 *)addr;
         if (lc->cmd == LC_SEGMENT_64) {
-            sect = (struct section_64 *)addr;
-            test = (struct symtab_command *)addr;
-            printf("Segment %s\n\t"
+			sc = (struct segment_command_64 *)addr;
+			if (ft_strcmp(sc->segname, "__TEXT") == 0)
+			{
+
+				 printf("Segment %s\n\t"
                 "vmaddr 0x%llx\n\t"
                 "vmsize 0x%llx\n\t"
                 "fileoff %llu\n\t"
                 "filesize %llu\n\t"
-                "cmd %d\n\t"
-                "section : %s\n",
+                "nb_sections %d\n",
                 sc->segname,
                 sc->vmaddr,
                 sc->vmsize,
                 sc->fileoff,
                 sc->filesize,
-                sc->cmd,
-                sect->sectname);
-        }
+                sc->nsects);
+				unsigned int i = 1;
+				addr += sizeof(struct segment_command_64);
+				while (i <= sc->nsects)
+				{
+					sect = (struct section_64 *)addr;
+					addr += sizeof(struct section_64);
+					if (ft_strcmp(sect->sectname, "__text") == 0)
+					{	
+						 printf("Section %s\n\t"
+						"segname %s\n\t"
+						"addr 0x%llx\n\t"
+						"size %llx\n\t"
+						"offset %d\n\t"
+						"align %d\n",
+						sect->sectname,
+						sect->segname,
+						sect->addr,
+						sect->size,
+						sect->offset,
+						sect->align);
 
-        // Advance to the next load command    
+						void *ptr = (void *)sect->addr;
+						printf("TEST %p, %i\n", ptr, *(ptr));
+				}
+					i++;
+				}
+				return ;
+		}
+	}
+	        // Advance to the next load command    
         addr += lc->cmdsize;
     }
 
