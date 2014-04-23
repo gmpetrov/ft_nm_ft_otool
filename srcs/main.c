@@ -6,7 +6,7 @@
 /*   By: gpetrov <gpetrov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/04/22 18:59:21 by gpetrov           #+#    #+#             */
-/*   Updated: 2014/04/23 23:18:17 by gpetrov          ###   ########.fr       */
+/*   Updated: 2014/04/24 00:20:48 by gpetrov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void        ft_nm(char *file)
 
     // Map the file to memory
     addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
-
+	char *copy = addr;
     // The first bytes of a Mach-O file comprise its header
     mh = (struct mach_header_64 *)addr;
 
@@ -101,11 +101,19 @@ void        ft_nm(char *file)
 						sect->offset,
 						sect->align);
 
-						void *ptr = (void *)sect->addr;
-						printf("TEST %p, %i\n", ptr, *(ptr));
+						copy += sect->offset;
+						unsigned int  i = 0;
+						while (i < sect->size)
+						{
+							printf("size =  %llx\n", sect->size);
+							printf("TEST %x\n", copy[i]);
+							i++;
+						}
+
 				}
 					i++;
 				}
+				
 				return ;
 		}
 	}
