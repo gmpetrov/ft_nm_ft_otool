@@ -30,12 +30,12 @@ void	error_not_object(char *file)
 int		ft_otool_finder_obj(t_data *data)
 {
 	struct load_command			*lc;
-    struct segment_command_64	*sc;
-    struct section_64			*sect;
+	struct segment_command_64	*sc;
+	struct section_64			*sect;
 
 	sect = NULL;
 	lc = (struct load_command *)data->addr;
-    if (lc->cmd == LC_SEGMENT_64)
+	if (lc->cmd == LC_SEGMENT_64)
 	{
 		sc = (struct segment_command_64 *)data->addr;
 		otool_text_segment(data, sc, sect);
@@ -43,9 +43,7 @@ int		ft_otool_finder_obj(t_data *data)
 		close(data->fd);
 		return (-1);
 	}
-    data->addr += lc->cmdsize;
+	data->addr += lc->cmdsize;
 	data->j++;
 	return (0);
 }
-
-

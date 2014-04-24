@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 NAME	= ft_otool
-FILES	= main.c dec_to_hex.c tools.c
+FILES	= main.c dec_to_hex.c tools.c ft_otool.c
 SRCS	= $(addprefix srcs/, $(FILES))
 OBJS	= $(SRCS:srcs/%.c=.obj/%.o)
 INC		= -I includes -I libft/includes

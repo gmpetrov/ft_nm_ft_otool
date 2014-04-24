@@ -43,5 +43,6 @@ void	error_open(char *file);
 void	error_not_object(char *file);
 int		ft_otool_finder_obj(t_data *data);
 void	otool_text_segment(t_data *data, struct segment_command_64 *sc, struct section_64 *sec);
+void	ft_otool(char *file, t_data *data);
 
 #endif
