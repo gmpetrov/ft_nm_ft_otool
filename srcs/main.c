@@ -6,7 +6,7 @@
 /*   By: gpetrov <gpetrov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/04/22 18:59:21 by gpetrov           #+#    #+#             */
-/*   Updated: 2014/04/24 00:20:48 by gpetrov          ###   ########.fr       */
+/*   Updated: 2014/04/24 13:48:55 by gpetrov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,139 +28,99 @@ void		ft_file_error(char *file)
 	ft_putstr(" (No such file or directory)\n");
 }
 
-void        ft_nm(char *file)
+void        ft_otool(char *file, t_data *data)
 {
-    int fd;
     struct stat stat_buf;
-    size_t size;
-
-    char *addr = NULL;
-    struct mach_header_64 *mh;
+	struct mach_header_64 *mh;
     struct load_command *lc;
     struct segment_command_64 *sc;
     struct section_64 *sect;
 
-    // Open the file and get its size
-    fd = open(file, O_RDONLY);
-    fstat(fd, &stat_buf);
-    size = stat_buf.st_size;
+	data->space = '0';
+    data->fd = open(file, O_RDONLY);
+    fstat(data->fd, &stat_buf);
+    data->size = stat_buf.st_size;
 
-    // Map the file to memory
-    addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, fd, 0);
-	char *copy = addr;
-    // The first bytes of a Mach-O file comprise its header
-    mh = (struct mach_header_64 *)addr;
+    data->addr = mmap(0, data->size, PROT_READ | PROT_WRITE, MAP_FILE | MAP_PRIVATE, data->fd, 0);
+	char *copy = data->addr;
+    mh = (struct mach_header_64 *)data->addr;
 
-    // Load commands follow the header
-    addr += sizeof(struct mach_header_64);
+    data->addr += sizeof(struct mach_header_64);
 
-    printf("There are %d load commands\n", mh->ncmds);
-
-    for (int i = 0; (unsigned int)i < mh->ncmds; i++) {
-        lc = (struct load_command *)addr;
-		
-		if (lc->cmdsize == 0) continue;
-
-        // If the load command is a (64-bit) segment,
-        // print information about the segment
+	ft_putstr(file);
+	ft_putstr(":\n");
+	data->j = 0;
+    while (data->j < mh->ncmds) 
+	{
+        lc = (struct load_command *)data->addr;
         if (lc->cmd == LC_SEGMENT_64) {
-			sc = (struct segment_command_64 *)addr;
+			sc = (struct segment_command_64 *)data->addr;
 			if (ft_strcmp(sc->segname, "__TEXT") == 0)
 			{
-
-				 printf("Segment %s\n\t"
-                "vmaddr 0x%llx\n\t"
-                "vmsize 0x%llx\n\t"
-                "fileoff %llu\n\t"
-                "filesize %llu\n\t"
-                "nb_sections %d\n",
-                sc->segname,
-                sc->vmaddr,
-                sc->vmsize,
-                sc->fileoff,
-                sc->filesize,
-                sc->nsects);
-				unsigned int i = 1;
-				addr += sizeof(struct segment_command_64);
-				while (i <= sc->nsects)
+				ft_putstr("(__TEXT,");
+				data->i = 1;
+				data->addr += sizeof(struct segment_command_64);
+				while (data->i <= sc->nsects)
 				{
-					sect = (struct section_64 *)addr;
-					addr += sizeof(struct section_64);
+					sect = (struct section_64 *)data->addr;
+					data->addr += sizeof(struct section_64);
 					if (ft_strcmp(sect->sectname, "__text") == 0)
-					{	
-						 printf("Section %s\n\t"
-						"segname %s\n\t"
-						"addr 0x%llx\n\t"
-						"size %llx\n\t"
-						"offset %d\n\t"
-						"align %d\n",
-						sect->sectname,
-						sect->segname,
-						sect->addr,
-						sect->size,
-						sect->offset,
-						sect->align);
-
+					{	printf("__text) section\n");
+						 printf("0000000%llx ", sect->addr);
+						data->add_jump = sect->addr;
 						copy += sect->offset;
-						unsigned int  i = 0;
-						while (i < sect->size)
+						data->i = 0;
+						data->jump = 0;
+						while (data->i < sect->size)
 						{
-							printf("size =  %llx\n", sect->size);
-							printf("TEST %x\n", copy[i]);
-							i++;
-						}
+							if (data->jump == 16)
+							{
+								data->jump = 0;
+								data->add_jump += 16;
+								printf("\n0000000%llx ", data->add_jump);
+								data->space = '0';
 
-				}
-					i++;
+							}
+							if (data->space == '0')
+							{
+								printf("%.2x", copy[data->i]);
+								data->space = '1';
+							}
+							else
+								printf(" %.2x", copy[data->i]);
+							data->jump++;
+							data->i++;
+						}
+					}
+					data->i++;
 				}
 				
 				return ;
+			}
 		}
-	}
-	        // Advance to the next load command    
-        addr += lc->cmdsize;
+        data->addr += lc->cmdsize;
+		data->j++;
     }
 
     printf("\nDone.\n");
 
-    munmap(addr, size);
-    close(fd);
+    munmap(data->addr, data->size);
+    close(data->fd);
 }
 
-/*
-void		ft_nm(char *file)
-{
-    struct stat    test;
-
-
-	if (open(file, O_RDONLY) >= 0)
-	{
-		write(1, file, ft_strlen(file));
-		write(1, "\n", 1);
-	}
-	else
-    {
-		ft_file_error(file);
-        return ;
-    }
-    stat(file, &test);
-    printf("peripherique : %d\n", test.st_dev);
-    printf("proprietaire : %d\n", test.st_uid);
-    printf("stat : %lld\n", test.st_size);
-}
-*/
 int			main(int ac, char **av)
 {
 	int		i;
+	t_data	data;
 
 	i = 0;
 	(void) ac;
 	if (ac == 1)
-		ft_nm("a.out");
+		ft_otool("a.out", &data);
 	else
 	{
 		while (av[++i])
-			ft_nm(av[i]);
+			ft_otool(av[i], &data);
 	}
 	return (0);
 }
