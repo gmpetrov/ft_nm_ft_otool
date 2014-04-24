@@ -6,12 +6,12 @@
 #    By: gpetrov <gpetrov@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2014/04/22 18:56:25 by gpetrov           #+#    #+#              #
-#    Updated: 2014/04/24 12:38:22 by gpetrov          ###   ########.fr        #
+#    Updated: 2014/04/24 17:22:30 by gpetrov          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME	= ft_nm
-FILES	= main.c 
+NAME	= ft_otool
+FILES	= main.c dec_to_hex.c tools.c
 SRCS	= $(addprefix srcs/, $(FILES))
 OBJS	= $(SRCS:srcs/%.c=.obj/%.o)
 INC		= -I includes -I libft/includes
