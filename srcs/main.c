@@ -6,7 +6,7 @@
 /*   By: gpetrov <gpetrov@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2014/04/22 18:59:21 by gpetrov           #+#    #+#             */
-/*   Updated: 2014/04/24 18:36:41 by gpetrov          ###   ########.fr       */
+/*   Updated: 2014/04/24 18:49:33 by gpetrov          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,7 +131,7 @@ void        ft_otool(char *file, t_data *data)
 	}
     ft_putstr(file);
 	ft_putstr(":\n");
-	if (mh->filetype == MH_OBJECT)
+	if (mh->filetype == 0)
 	{
 		ft_otool_finder_obj(data);
 		return ;	
